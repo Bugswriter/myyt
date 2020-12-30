@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
 
+# if the query isn't provided as an arg, grab it with 'dmenu'
 if [[ -z "$1" ]]; then
-  printf "Search query: "; 
-  query=$( echo | dmenu -p "Search YT Video:" )
+  query=$( printf | dmenu -b -p "Search YouTube:" )
 else
 	query="$1"
 fi
 
+# in the query, replace any spaces with '+' to match YouTube's search syntax
 query="${query// /+}"
-echo "$query"
 
-# YT_API_KEY location
+# set the variable below to your API key if desired.
+# YT_API_KEY=""
+# otherwise, set your YT_API_KEY file location below
 YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
+# get the video url by filtering the search results with 'jq' and sending them to dmenu
+# the video chosen is then given to 'mpv' a url to stream from
 mpv "https://$( curl -s "${urlstring}" \
 	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"' \
-	| dmenu -i -p 'Select Video -' -l 20 \
+	| dmenu -b -i -p "Select Video -" -l 20 \
 	| awk '{print $NF}' \
 )"

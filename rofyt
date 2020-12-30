@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# if the query isn't provided as an arg, grab it with 'read'
+# if the query isn't provided as an arg, grab it with 'rofi'
 if [[ -z "$1" ]]; then
-  read -rp "Search YouTube: " query
+  query=$( echo "Search YouTube:" | rofi -dmenu )
 else
 	query="$1"
 fi
@@ -10,14 +10,16 @@ fi
 # in the query, replace any spaces with '+' to match YouTube's search syntax
 query="${query// /+}"
 
-# YT_API_KEY location
+# set the variable below to your API key if desired.
+# YT_API_KEY=""
+# otherwise, set your YT_API_KEY file location below
 YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
-# get the video url by filtering the search results with 'jq' and sending them to 'fzf'
+# get the video url by filtering the search results with 'jq' and sending them to 'rofi'
 # the video chosen is then given to 'mpv' a url to stream from
 mpv "https://$( curl -s "${urlstring}" \
-	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"' \
-	| fzf --with-nth='1..-2' +m \
+	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"' \
+	| rofi -dmenu \
 	| awk '{print $NF}' \
 )"
