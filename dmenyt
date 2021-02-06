@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
-if [[ -z "$1" ]]; then
-  printf "Search query: "; 
-  query=$( echo | dmenu -p "Search YT Video:" )
-else
-	query="$1"
-fi
+#this script is not so reliable, dmenu sometimes it crashes due to weird glyphs from youtube
+[ -z "$1" ] && printf "put expression to search for\\n" && exit
 
-query="${query// /+}"
-echo "$query"
+query=$(echo "$@" | tr ' ' '+')
 
-# YT_API_KEY location
+# YT_API_KEY location, again can change this , check the README if you find in trouble
 YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
+
+[ -z "$YT_API_KEY" ] && printf "you need to define a api key\\n" && exit
+
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
-mpv "https://$( curl -s "${urlstring}" \
+a="$(curl -s "${urlstring}" \
 	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"' \
 	| dmenu -i -p 'Select Video -' -l 20 \
 	| awk '{print $NF}' \
 )"
+
+[ -z "$a" ] && exit || mpv "https://$a"
