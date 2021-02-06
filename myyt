@@ -1,20 +1,20 @@
-#!/usr/bin/env bash
 
-if [[ -z "$1" ]]; then
-  read -rp "Search query: " query
-else
-	query="$1"
-fi
+#!/bin/sh
 
-query="${query// /+}"
-echo "$query"
+query="$(echo "$@" | tr ' ' '+')"
 
-# YT_API_KEY location
+# YT_API_KEY location, you can change this of course or put the api directly here replacing the following line with your key i.e.: YT_API_KEY=''
 YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
+
+[ -z "$YT_API_KEY" ] && printf "you need to define an api key\\n" && exit
+
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
-mpv "https://$( curl -s "${urlstring}" \
+a="$( curl -s "${urlstring}" \
 	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"' \
-	| fzf --with-nth='1..-2' +m \
+	| fzf --reverse --cycle --with-nth='1..-2' +m \
 	| awk '{print $NF}' \
 )"
+
+#allow you to exit cleanly if no value is passed 
+[ -n "$a" ] && mpv "https://$a"
