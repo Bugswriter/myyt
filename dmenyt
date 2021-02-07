@@ -1,7 +1,9 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
+[ -z "$1" ] && query=$(echo | dmenu -p "Search YT Video:") \
+	&& query=$(echo "$buscar" | tr ' ' '+')
+[ -n "$1" ] && query=$(echo "$@" | tr ' ' '+')
 
 #this script is not so reliable, dmenu sometimes it crashes due to weird glyphs from youtube
-[ -z "$1" ] && printf "put expression to search for\\n" && exit
 
 query=$(echo "$@" | tr ' ' '+')
 
@@ -12,10 +14,10 @@ YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
 
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
-a="$(curl -s "${urlstring}" \
-	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"' \
-	| dmenu -i -p 'Select Video -' -l 20 \
-	| awk '{print $NF}' \
-)"
+a=$(curl -4 -sf "${urlstring}" \
+	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"')
 
-[ -z "$a" ] && exit || mpv "https://$a"
+while true; do
+	b=$(echo "$a" | dmenu -i -p 'Select Video -' -l 20 | awk '{print $NF}')
+	[ -z "$b" ] && exit || mpv "https://$b" 1>/dev/null # see if errors happened
+done &
