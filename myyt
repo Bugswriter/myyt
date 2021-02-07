@@ -16,7 +16,7 @@ a="$( curl -s "${urlstring}" \
 	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"')"
 	
 while true; do
-	b="$( echo "$a" | fzf --reverse --cycle --with-nth='1..-2' +m | awk '{print $NF}')"
+	b="$( echo "$a" | fzf --reverse --cycle --with-nth='1..-2' +m | awk '{print $NF}')" \
 	&& [ -z "$b" ] && exit || mpv "https://$b" >/dev/null
 done
 
