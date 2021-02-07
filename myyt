@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -z "$1" ] && printf "put expression to search: \\n" \
+[ -z "$1" ] && printf "put expression to search: " \
 && read -r eso && query="$(echo "$eso" | tr ' ' '+')"
 
 [ -n "$1" ] && query="$(echo "$@" | tr ' ' '+')"
