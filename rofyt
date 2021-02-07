@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # if the query isn't provided as an arg, grab it with 'rofi'
 if [[ -z "$1" ]]; then
