@@ -1,6 +1,9 @@
 #!/bin/sh
 
-query="$(echo "$@" | tr ' ' '+')"
+[ -z "$1" ] && printf "put expression to search: \\n" \
+&& read -r eso && query="$(echo "$eso" | tr ' ' '+')"
+
+[ -n "$1" ] && query="$(echo "$@" | tr ' ' '+')"
 
 # YT_API_KEY location, you can change this of course or put the api directly here replacing the following line with your key i.e.: YT_API_KEY=''
 YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
@@ -10,10 +13,11 @@ YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
 a="$( curl -s "${urlstring}" \
-	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"' \
-	| fzf --reverse --cycle --with-nth='1..-2' +m \
-	| awk '{print $NF}' \
-)"
+	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"')"
+	
+while true; do
+	b="$( echo "$a" | fzf --reverse --cycle --with-nth='1..-2' +m | awk '{print $NF}')"
+	&& [ -z "$b" ] && exit || mpv "https://$b" >/dev/null
+done
 
-#allow you to exit cleanly if no value is passed 
-[ -n "$a" ] && mpv "https://$a"
+
