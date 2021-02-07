@@ -3,8 +3,6 @@
 	&& query=$(echo "$buscar" | tr ' ' '+')
 [ -n "$1" ] && query=$(echo "$@" | tr ' ' '+')
 
-#this script is not so reliable, dmenu sometimes it crashes due to weird glyphs from youtube
-
 query=$(echo "$@" | tr ' ' '+')
 
 # YT_API_KEY location, again can change this , check the README if you find in trouble
