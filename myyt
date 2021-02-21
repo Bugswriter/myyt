@@ -16,8 +16,10 @@ a="$( curl -s "${urlstring}" \
 	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"')"
 	
 while true; do
-	b="$( echo "$a" | fzf --reverse --cycle --with-nth='1..-2' +m | awk '{print $NF}')" \
-	&& [ -z "$b" ] && exit || mpv "https://$b" >/dev/null
+	[ -n "$vent" ] && xdo show $vent
+	b="$( echo "$a" | fzf --reverse --cycle --with-nth='1..-2' +m \
+		| awk '{print $NF}')" && vent=$(xdo id) && xdo hide $vent \
+	&& [ -z "$b" ] && xdo show $vent && exit || mpv --really-quiet "https://$b" #>/dev/null
 done
 
 
