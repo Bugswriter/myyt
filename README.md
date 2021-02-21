@@ -12,5 +12,5 @@ for `dmenyt`, `myyt` and `rofyt` You need to set the variable `YT_API_KEY` to th
 
 See [tutorial](https://elfsight.com/blog/2016/12/how-to-get-youtube-api-key-tutorial/) on the API key if you need help, or [start directly in the console](https://console.developers.google.com/apis/library?filter=category:youtube) if you are familiar with the platform.
 
-Install the required programs: `fzf`, `dmenu`, `mpv` `jq`, `awk` and `youtube-dl`.
+Install the required programs: `xdo`, `fzf`, `dmenu`, `mpv` `jq`, `awk`, `gnu-coreutils` and `youtube-dl`.
 
