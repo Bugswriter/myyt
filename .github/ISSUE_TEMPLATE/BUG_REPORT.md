@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a problem in tuxi
+about: Report a problem in yt
 
 ---
 
