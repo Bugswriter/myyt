@@ -4,6 +4,7 @@
 - It seems you get better results with `yt` script (scraping) than using the api
 - that couses less effort making an api but, as always, scraping is not reliable
 - `yt` was highly inspired by https://github.com/sayan01/scripts/blob/master/yt, I've only made several changes to it, check his repo!
+- of couse, this doesn't replace any browser
  
 ## Requirements
 
