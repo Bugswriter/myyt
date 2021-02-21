@@ -14,3 +14,11 @@ See [tutorial](https://elfsight.com/blog/2016/12/how-to-get-youtube-api-key-tuto
 
 Install the required programs: `xdo`, `fzf`, `dmenu`, `mpv` `jq`, `awk`, `gnu-coreutils` and `youtube-dl`.
 
+## License
+
+This project is licensed under [GPL-3.0](./LICENSE).
+
+
+## Contributing
+
+If you want to contribute, please see [CONTRIBUTING](./.github/ISSUE_TEMPLATE/CONTRIBUTING.md).
