@@ -12,15 +12,33 @@ fi
 query="${query// /+}"
 echo "$query"
 
-# YT_API_KEY location
-YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
-urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
+ytb_jsondata=$(curl "https://www.youtube.com/results" -s \
+	-G --data-urlencode "search_query=$query" \
+	-G --data-urlencode "pbj=1" \
+	-H "user-agent:Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0" \
+	-H "accept-language:en-US, en;q=0.9" \
+	-H "x-youtube-client-name:1" -H "x-youtube-client-version:2.20200214.04.00" \
+	-H "accept-encoding:gzip" --compressed \
+)
 
-video_url="$( curl -s "${urlstring}" \
-	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) youtu.be/\(.id.videoId)"' \
+ytb_jsonvdata=$(printf "%s" "$ytb_jsondata" | jq ".[1].response" | jq '[ .contents|
+	..|.videoRenderer? |
+	select(. !=null) |
+		{
+			title: .title.runs[0].text,
+			channel: .longBylineText.runs[0].text,
+			duration:.lengthText.simpleText,
+			views: .shortViewCountText.simpleText,
+			date: .publishedTimeText.simpleText,
+			videoID: .videoId,
+		}
+	]')
+
+video_url=$(printf "%s" "$ytb_jsonvdata" | \
+	jq -r '.[]| "[\(.channel)] -- \(.title) -- [\(.duration)] -- \(.date) -- youtu.be/\(.videoID)"' \
 	| fzf --with-nth='1..-2' +m \
 	| awk '{print $NF}' \
-)"
+)
 
 # If no video was chosen, exit
 [ -z "${video_url}" ] && exit 1
