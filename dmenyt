@@ -1,21 +1,31 @@
 #!/usr/bin/env bash
 
+# if the query isn't provided as an arg, grab it with 'dmenu'
 if [[ -z "$1" ]]; then
-  printf "Search query: "; 
-  query=$( echo | dmenu -p "Search YT Video:" )
+  query=$( printf "" | dmenu -b -p "Search YouTube:" )
 else
 	query="$1"
 fi
 
+# if query was given, replace any spaces with '+' to match YouTube's search syntax
+[ -z "${query}" ] && echo "No query given. Exiting." && exit 1
 query="${query// /+}"
-echo "$query"
 
-# YT_API_KEY location
-YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
+# set the variable below to your API key if desired.
+# YT_API_KEY=""
+# otherwise, set your YT_API_KEY file location below
+YT_API_KEY="$( cat "${HOME}/lib/api_keys/YT_API_KEY" )"
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
-mpv "https://$( curl -s "${urlstring}" \
+# get the video url by filtering the search results with 'jq' and sending them to 'dmenu'
+# the url of the video chosen is then given to 'mpv'
+video="$( curl -s "${urlstring}" \
 	| jq -r '.items[] | "\(.snippet.channelTitle) => \(.snippet.title) => youtu.be/\(.id.videoId)"' \
-	| dmenu -i -p 'Select Video -' -l 20 \
+	| dmenu -b -i -p "Select Video -" -l 20 \
 	| awk '{print $NF}' \
 )"
+
+[ -z "${video}" ] && echo "No video selected. Exiting." && exit 1
+video="https://${video}"
+
+mpv --no-terminal -- "${video}"
