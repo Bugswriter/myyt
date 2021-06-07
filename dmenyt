@@ -8,16 +8,13 @@ else
 fi
 
 # if query was given, replace any spaces with '+' to match YouTube's search syntax
-if [[ "${query}" ]]; then
-	query="${query// /+}"
-else
-	echo "No query given. Exiting."; exit 1
-fi
+[ -z "${query}" ] && echo "No query given. Exiting." && exit 1
+query="${query// /+}"
 
 # set the variable below to your API key if desired.
 # YT_API_KEY=""
 # otherwise, set your YT_API_KEY file location below
-YT_API_KEY="$( cat "${HOME}"/.api_keys/YT_API_KEY )"
+YT_API_KEY="$( cat "${HOME}/lib/api_keys/YT_API_KEY" )"
 urlstring="https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=20&key=${YT_API_KEY}"
 
 # get the video url by filtering the search results with 'jq' and sending them to 'dmenu'
@@ -28,10 +25,7 @@ video="$( curl -s "${urlstring}" \
 	| awk '{print $NF}' \
 )"
 
-if [[ "${video}" ]]; then
-	video="https://${video}"
-else
-	echo "No video selected. Exiting."; exit 1
-fi
+[ -z "${video}" ] && echo "No video selected. Exiting." && exit 1
+video="https://${video}"
 
-mpv -- "${video}"
+mpv --no-terminal -- "${video}"
