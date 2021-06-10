@@ -1,7 +1,36 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
-if [[ -z "$1" ]]; then
-	read -rp "Search query: " query
+# check if app installed ; ignores aliases
+has() {
+	case "$(command -v "$1" 2>/dev/null)" in
+		alias*|"") return 1
+	esac
+}
+
+_input(){
+	if has 'rofi' ; then
+		printf '' | rofi -dmenu -p 'Search YT Video' -l 0
+	elif has 'dmenu'; then
+		printf '' | dmenu -p 'Search YT Video:'
+	else
+		read -r query && echo "$query"
+	fi
+}
+
+_choose(){
+	if has 'rofi' ; then
+		rofi -dmenu -i -p 'Select Video' -width 90 -i -l 20 -multi-select
+	elif has 'dmenu'; then
+		dmenu -i -p 'Select Video:' -l 20
+	elif has 'fzf'; then
+		fzf --with-nth='1..-3' --multi
+	fi
+}
+
+printf "Search query: ";
+
+if [ -z "$1" ]; then
+	query="$(_input)"
 else
 	query="$*"
 fi
@@ -9,7 +38,6 @@ fi
 # If no query was passed, exit
 [ -z "${query}" ] && exit 1
 
-query="${query// /+}"
 echo "$query"
 
 ytb_jsondata=$(curl "https://www.youtube.com/results" -s \
@@ -21,7 +49,7 @@ ytb_jsondata=$(curl "https://www.youtube.com/results" -s \
 	-H "accept-encoding:gzip" --compressed \
 )
 
-ytb_jsonvdata=$(printf "%s" "$ytb_jsondata" | jq ".[1].response" | jq '[ .contents|
+ytb_jsonvdata=$(printf '%s' "$ytb_jsondata" | jq ".[1].response" | jq '[ .contents|
 	..|.videoRenderer? |
 	select(. !=null) |
 		{
@@ -34,13 +62,13 @@ ytb_jsonvdata=$(printf "%s" "$ytb_jsondata" | jq ".[1].response" | jq '[ .conten
 		}
 	]')
 
-video_url=$(printf "%s" "$ytb_jsonvdata" | \
+video_url=$(printf '%s' "$ytb_jsonvdata" | \
 	jq -r '.[]| "[\(.channel)] -- \(.title) -- [\(.duration)] -- \(.date) -- youtu.be/\(.videoID)"' \
-	| fzf --with-nth='1..-2' +m \
+	| _choose \
 	| awk '{print $NF}' \
 )
 
 # If no video was chosen, exit
 [ -z "${video_url}" ] && exit 1
 
-mpv "https://$video_url"
+printf 'https://%s\n' ${video_url} | mpv --playlist=-
